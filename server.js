@@ -28,8 +28,9 @@ const Report = sequelize.define('Report', {
   title: { type: DataTypes.STRING, allowNull: false },
   category: { type: DataTypes.STRING, allowNull: false },
   location: { type: DataTypes.STRING, allowNull: false },
+  description: { type: DataTypes.TEXT, defaultValue: '' },
   votes: { type: DataTypes.INTEGER, defaultValue: 0 },
-  status: { type: DataTypes.STRING, defaultValue: 'Pending' },
+  status: { type: DataTypes.STRING, defaultValue: 'Dilaporkan' },
   coords: { 
     type: DataTypes.TEXT, 
     allowNull: false,
@@ -44,8 +45,8 @@ const Report = sequelize.define('Report', {
   image: { type: DataTypes.TEXT, defaultValue: 'https://images.unsplash.com/photo-1584467541268-b040f83be3fd?auto=format&fit=crop&q=80&w=400' }
 });
 
-// Sync Database
-sequelize.sync()
+// Sync Database — alter:true adds new columns without dropping existing data
+sequelize.sync({ alter: true })
   .then(() => console.log('✅ SQLite Database & Tables Synced'))
   .catch(err => console.error('❌ SQLite Sync Error:', err));
 
@@ -61,7 +62,7 @@ app.get('/reports', async (req, res) => {
 
 // 2. POST /reports - Tambah laporan baru
 app.post('/reports', async (req, res) => {
-  const { title, category, location, coords, image } = req.body;
+  const { title, category, location, description, coords, image } = req.body;
   
   if (!title || !category || !coords) {
     return res.status(400).json({ message: 'Title, category, and coords are required' });
@@ -71,10 +72,11 @@ app.post('/reports', async (req, res) => {
     const newReport = await Report.create({
       title,
       category,
-      location,
+      location: location || '',
+      description: description || '',
       coords,
       image,
-      status: 'Pending',
+      status: 'Dilaporkan',
       votes: 0
     });
     res.status(201).json(newReport);
@@ -102,6 +104,10 @@ app.post('/reports/:id/vote', async (req, res) => {
 // 4. POST /reports/:id/status - Update status laporan
 app.post('/reports/:id/status', async (req, res) => {
   const { status } = req.body;
+  const validStatuses = ['Dilaporkan', 'Diverifikasi', 'Diproses', 'Selesai'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ message: 'Status tidak valid' });
+  }
   try {
     const report = await Report.findByPk(req.params.id);
     if (report) {
@@ -116,7 +122,7 @@ app.post('/reports/:id/status', async (req, res) => {
   }
 });
 
-// 4. GET /stats - Statistik
+// 5. GET /stats - Statistik
 app.get('/stats', async (req, res) => {
   try {
     const totalReports = await Report.count();
@@ -138,18 +144,32 @@ app.get('/stats', async (req, res) => {
       }
     }
 
+    // Status breakdown
+    const statusCounts = {};
+    reports.forEach(r => {
+      statusCounts[r.status] = (statusCounts[r.status] || 0) + 1;
+    });
+
     res.json({
       totalReports,
       mostPopularCategory,
-      categoryDistribution: counts
+      categoryDistribution: counts,
+      statusDistribution: statusCounts
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
+const distPath = path.join(__dirname, 'dist');
+app.use(express.static(distPath));
+
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(distPath, 'index.html'));
+});
+
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
 });

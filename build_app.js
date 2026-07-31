@@ -437,4 +437,6 @@ function App() {
 export default App;
 `;
 
-fs.writeFileSync('./src/App.jsx', appContent);
+// fs.writeFileSync('./src/App.jsx', appContent);
+// console.log("WARNING: build_app.js writing is disabled to protect the advanced 3D / Leaflet App.jsx version.");
+

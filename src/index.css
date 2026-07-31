@@ -1,82 +1,642 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800&display=swap');
 @import "tailwindcss";
 
+/* =============================================
+   DESIGN SYSTEM — CivicVoice Premium Theme
+   ============================================= */
 @theme {
-  --font-sans: 'Poppins', sans-serif;
-  
-  --color-brand-blue: #2563eb;
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Syne', sans-serif;
+
+  /* Brand Palette */
+  --color-brand-blue:   #2563eb;
+  --color-brand-indigo: #4f46e5;
   --color-brand-purple: #7c3aed;
-  --color-brand-red: #ef4444;
-  --color-brand-green: #10b981;
+  --color-brand-red:    #ef4444;
+  --color-brand-green:  #10b981;
   --color-brand-orange: #f59e0b;
+
+  /* Surface */
+  --color-surface:      #f8fafd;
+  --color-surface-2:    #f1f5f9;
 }
+
+/* =============================================
+   BASE RESET & GLOBAL
+   ============================================= */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f8fafc;
+  background-color: #f8fafd;
+  color: #0f172a;
 }
 
-/* Glassmorphism utilities */
+/* =============================================
+   SCROLLBAR
+   ============================================= */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* =============================================
+   TYPOGRAPHY UTILITIES
+   ============================================= */
+.font-display { font-family: 'Syne', sans-serif; }
+
+.text-gradient {
+  background: linear-gradient(135deg, #1e40af 0%, #4f46e5 50%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-warm {
+  background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* =============================================
+   GLASSMORPHISM
+   ============================================= */
 .glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.80);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.70);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.glass-dark {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
+/* =============================================
+   PREMIUM SHADOW SYSTEM
+   ============================================= */
+.shadow-card {
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.04),
+    0 4px 12px rgba(0,0,0,0.06),
+    0 0 0 1px rgba(0,0,0,0.03);
 }
 
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+.shadow-card-hover {
+  box-shadow:
+    0 4px 6px rgba(0,0,0,0.04),
+    0 12px 32px rgba(0,0,0,0.10),
+    0 0 0 1px rgba(37,99,235,0.08);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+.shadow-modal {
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.05),
+    0 24px 80px rgba(0,0,0,0.18),
+    0 8px 24px rgba(0,0,0,0.08);
 }
 
-/* Leaflet map popup overrides */
-.leaflet-popup-content-wrapper {
-  padding: 0;
-  border-radius: 1rem;
+.shadow-blue {
+  box-shadow:
+    0 4px 14px rgba(37,99,235,0.30),
+    0 1px 4px rgba(37,99,235,0.20);
+}
+
+.shadow-blue-lg {
+  box-shadow:
+    0 8px 30px rgba(37,99,235,0.35),
+    0 2px 8px rgba(37,99,235,0.20);
+}
+
+.shadow-nav {
+  box-shadow:
+    0 1px 0 rgba(0,0,0,0.05),
+    0 4px 20px rgba(0,0,0,0.06);
+}
+
+.shadow-inset-top {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+/* =============================================
+   GRADIENT BACKGROUNDS
+   ============================================= */
+.bg-hero {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(37,99,235,0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 50%, rgba(124,58,237,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 10% 70%, rgba(16,185,129,0.05) 0%, transparent 70%),
+    #f8fafd;
+}
+
+.bg-hero-dark {
+  background: linear-gradient(140deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+}
+
+.bg-card-blue {
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+}
+
+.bg-card-emerald {
+  background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
+}
+
+.bg-card-amber {
+  background: linear-gradient(135deg, #d97706 0%, #ea580c 100%);
+}
+
+.bg-card-red {
+  background: linear-gradient(135deg, #dc2626 0%, #db2777 100%);
+}
+
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-animated {
+  background: linear-gradient(135deg, #667eea, #764ba2, #2563eb, #06b6d4, #10b981);
+  background-size: 400% 400%;
+  animation: gradient-shift 12s ease infinite;
+}
+
+/* =============================================
+   BLOB / ORB ANIMATIONS
+   ============================================= */
+@keyframes blob-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(30px, -30px) scale(1.05); }
+  66%       { transform: translate(-20px, 20px) scale(0.97); }
+}
+
+.blob {
+  border-radius: 60% 40% 55% 45% / 50% 60% 40% 55%;
+  animation: blob-drift 10s ease-in-out infinite;
+  filter: blur(60px);
+}
+
+.blob-delay-2 { animation-delay: -3.3s; }
+.blob-delay-3 { animation-delay: -6.6s; }
+
+/* =============================================
+   CARD / INTERACTIVE ELEMENTS
+   ============================================= */
+.card-premium {
+  background: #ffffff;
+  border: 1px solid rgba(226,232,240,0.8);
+  border-radius: 1.5rem;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.card-premium:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0 4px 6px rgba(0,0,0,0.04),
+    0 16px 48px rgba(0,0,0,0.10),
+    0 0 0 1px rgba(37,99,235,0.06);
+}
+
+/* =============================================
+   BUTTONS
+   ============================================= */
+.btn-primary {
+  position: relative;
   overflow: hidden;
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  font-weight: 700;
+  border-radius: 0.875rem;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 14px rgba(37,99,235,0.30), inset 0 1px 0 rgba(255,255,255,0.15);
 }
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(37,99,235,0.40), inset 0 1px 0 rgba(255,255,255,0.20);
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: #1e293b;
+  font-weight: 600;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 0.875rem;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  border-color: #2563eb;
+  color: #2563eb;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.12);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #475569;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  transition: all 0.18s ease;
+}
+
+.btn-ghost:hover {
+  background: #f1f5f9;
+  color: #2563eb;
+}
+
+.btn-danger {
+  color: #ef4444;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.18s ease;
+}
+
+.btn-danger:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* =============================================
+   FORM ELEMENTS
+   ============================================= */
+.input-premium {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 0.875rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #0f172a;
+  transition: all 0.2s ease;
+  outline: none;
+  width: 100%;
+}
+
+.input-premium:focus {
+  border-color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.10);
+}
+
+.input-premium::placeholder { color: #94a3b8; }
+
+/* =============================================
+   BADGE SYSTEM (Premium)
+   ============================================= */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1.5px solid transparent;
+}
+
+/* =============================================
+   SKELETON LOADER
+   ============================================= */
+@keyframes shimmer {
+  0%   { background-position: -800px 0; }
+  100% { background-position: 800px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg,
+    #f0f4f8 0%, #e2e8f0 40%, #f0f4f8 80%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 0.75rem;
+}
+
+/* =============================================
+   FLOAT / HOVER ANIMATIONS
+   ============================================= */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50%       { transform: translateY(-12px) rotate(1deg); }
+}
+
+.float      { animation: float 3.5s ease-in-out infinite; }
+.float-slow { animation: float-slow 6s ease-in-out infinite; }
+
+/* =============================================
+   PULSE DOT (STATUS INDICATOR)
+   ============================================= */
+@keyframes pulse-ring {
+  0%   { transform: scale(0.9); opacity: 1; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.pulse-dot {
+  position: relative;
+  display: inline-block;
+}
+
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.3;
+  animation: pulse-ring 1.4s ease-out infinite;
+}
+
+/* =============================================
+   MARKER PULSE (MAP)
+   ============================================= */
+@keyframes marker-ripple {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* =============================================
+   PAGE ENTER ANIMATION
+   ============================================= */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-enter { animation: page-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* =============================================
+   STAT COUNTER ANIMATION
+   ============================================= */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(10px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.stat-number { animation: count-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* =============================================
+   CHART CONTAINER
+   ============================================= */
+.chart-container {
+  position: relative;
+  background: #ffffff;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(226,232,240,0.8);
+  padding: 2rem;
+  transition: box-shadow 0.3s ease;
+}
+
+.chart-container:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+}
+
+/* =============================================
+   TIMELINE (Detail Modal)
+   ============================================= */
+.timeline-line {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  bottom: 1.5rem;
+  width: 2px;
+  background: linear-gradient(to bottom, #e2e8f0, #e2e8f0);
+  border-radius: 1px;
+}
+
+.timeline-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to bottom, #2563eb, #4f46e5);
+  border-radius: 1px;
+  transition: height 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* =============================================
+   LEAFLET MAP POPUP OVERRIDES
+   ============================================= */
+.leaflet-popup-content-wrapper {
+  padding: 0 !important;
+  border-radius: 1.25rem !important;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.06),
+    0 20px 48px rgba(0,0,0,0.18) !important;
+  border: none !important;
+}
+
 .leaflet-popup-content {
-  margin: 0;
-  width: 256px !important;
+  margin: 0 !important;
+  width: 248px !important;
 }
+
+.leaflet-popup-tip-container { display: none; }
+
 .leaflet-container a.leaflet-popup-close-button {
   color: #fff;
-  padding: 8px;
-  z-index: 10;
-  background: rgba(0,0,0,0.2);
-  border-radius: 50%;
-  margin: 8px;
+  top: 8px;
+  right: 8px;
   width: 24px;
   height: 24px;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(0,0,0,0.30);
+  backdrop-filter: blur(8px);
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 1;
+  transition: background 0.2s;
+  z-index: 10;
 }
+
 .leaflet-container a.leaflet-popup-close-button:hover {
-  background: rgba(0,0,0,0.4);
-  color: #fff;
+  background: rgba(0,0,0,0.55);
 }
+
+/* =============================================
+   NOTIFICATION TOAST
+   ============================================= */
+.toast {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.30), 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+/* =============================================
+   SCROLLBAR INSIDE MAP SIDEBAR
+   ============================================= */
+.sidebar-scroll::-webkit-scrollbar { width: 4px; }
+.sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 99px; }
+
+/* =============================================
+   ADMIN SIDEBAR GLOW
+   ============================================= */
+.admin-sidebar {
+  background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 60%, #0f172a 100%);
+  box-shadow: 4px 0 24px rgba(0,0,0,0.20);
+}
+
+/* =============================================
+   RESPONSIVE UTILITIES
+   ============================================= */
+@media (max-width: 768px) {
+  .hide-mobile { display: none !important; }
+}
+
+@media (min-width: 769px) {
+  .hide-desktop { display: none !important; }
+}
+
+/* =============================================
+   PREMIUM SUBTLE VISUAL EFFECTS
+   ============================================= */
+@keyframes particle-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.25; }
+  50% { transform: translate(60px, -80px) scale(1.4); opacity: 0.7; }
+}
+
+@keyframes particle-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.35; }
+  50% { transform: translate(-70px, -40px) scale(0.9); opacity: 0.6; }
+}
+
+.particle-1 {
+  animation: particle-drift-1 16s ease-in-out infinite;
+}
+
+.particle-2 {
+  animation: particle-drift-2 20s ease-in-out infinite;
+}
+
+.badge-icon-hover {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.badge-icon-hover:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.badge-icon-hover:hover span:first-child {
+  transform: scale(1.3) rotate(15deg);
+}
+
+.badge-icon-hover span:first-child {
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: inline-block;
+}
+
+/* =============================================
+   ADVANCED 3D DEPTH SYSTEM
+   ============================================= */
+.perspective-container {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.layer-z-xs {
+  transform: translateZ(15px);
+}
+
+.layer-z-sm {
+  transform: translateZ(30px);
+}
+
+.layer-z-md {
+  transform: translateZ(60px);
+}
+
+.layer-z-lg {
+  transform: translateZ(90px);
+}
+
+/* 3D Depth Shadows */
+.shadow-3d-sm {
+  box-shadow: 
+    0 5px 15px rgba(0,0,0,0.08), 
+    0 15px 35px rgba(0,0,0,0.05),
+    inset 0 1px 0 rgba(255,255,255,0.4);
+}
+
+.shadow-3d-md {
+  box-shadow: 
+    0 10px 30px rgba(0,0,0,0.12), 
+    0 30px 60px rgba(0,0,0,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+.shadow-3d-lg {
+  box-shadow: 
+    0 20px 50px rgba(0,0,0,0.18), 
+    0 40px 90px rgba(0,0,0,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+/* Interactive Card Tilts */
+.interactive-tilt {
+  transition: transform 0.15s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.interactive-tilt:hover {
+  box-shadow: 
+    0 15px 35px rgba(37,99,235,0.12), 
+    0 30px 60px rgba(0,0,0,0.1),
+    0 0 0 1px rgba(37,99,235,0.15);
+}
+
+.interactive-tilt * {
+  transform-style: preserve-3d;
+}
+
+/* Parallax scroll animations variables set via GSAP */
+.scroll-3d-box {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Glassmorphic overlay for sections with 3D canvas background */
+.glass-overlay {
+  background: rgba(248, 250, 253, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+
