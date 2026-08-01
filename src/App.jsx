@@ -4,21 +4,16 @@ import {
   ThumbsUp, MessageSquare, ShieldCheck, Zap, Menu, X, CheckCircle2,
   AlertCircle, LayoutDashboard, BarChart3, Filter, LogOut, Search,
   TrendingUp, FileText, Activity, ChevronLeft, Home, ArrowRight,
-  Inbox, Award
+  Inbox, Award, Sparkles, Newspaper, Clock, Bell, Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend, ArcElement
 } from 'chart.js';
-import { Bar, Pie } from 'react-chartjs-2';
+import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import ThreeHeroCanvas from './components/ThreeHeroCanvas';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -50,6 +45,14 @@ const dummyComments = [
   { id: 1, user: 'Budi Santoso', text: 'Semoga cepat ditangani, ini sudah sangat mengganggu aktivitas warga.', time: '2 jam yang lalu' },
   { id: 2, user: 'Siti Aminah', text: 'Saya juga sering lewat sini, memang kondisinya sudah sangat parah. Tolong segera!', time: '5 jam yang lalu' },
 ];
+
+const fmtDate = (iso) => {
+  try {
+    return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  } catch {
+    return '';
+  }
+};
 
 // ==========================================
 // SHARED SMALL COMPONENTS
@@ -96,7 +99,6 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-// Empty state component
 const EmptyState = ({ icon: Icon, title, description, action }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -115,41 +117,65 @@ const EmptyState = ({ icon: Icon, title, description, action }) => (
 // ==========================================
 // MODALS
 // ==========================================
+const MiniStatCard = ({ label, value, icon: Icon, color, bg, delay = 0 }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 16 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay }}
+    className="card-premium bg-white p-5 shadow-card hover:shadow-card-hover border border-slate-200/50 flex items-center gap-4"
+  >
+    <div className={`w-11 h-11 ${bg} rounded-xl flex items-center justify-center shrink-0 border border-slate-200/20`}>
+      <Icon className={`h-5 w-5 ${color}`} />
+    </div>
+    <div>
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 font-display">{label}</p>
+      <p className={`text-2.5xl font-black ${color} font-display stat-number leading-none`}>{value}</p>
+    </div>
+  </motion.div>
+);
+
 const LoginModal = ({ isOpen, onClose, onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" />
-      <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-modal relative z-10 border border-slate-100">
-        <div className="bg-gradient-to-br from-brand-blue to-brand-indigo p-8 text-white flex justify-between items-center relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className="bg-white/15 p-1.5 rounded-lg backdrop-blur-sm"><ShieldCheck className="h-4 w-4" /></div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-200">CivicVoice SecLog</span>
-            </div>
-            <h2 className="text-2xl font-bold font-display">Selamat Datang</h2>
-            <p className="text-blue-100/80 text-xs mt-1">Gunakan 'admin' di email untuk akses Administrator</p>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-[#1F2937]/40 backdrop-blur-md" />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="glass-card rounded-[1.75rem] w-full max-w-md relative z-10 p-8 sm:p-10 text-center"
+      >
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-40 h-40 bg-gradient-to-br from-[#5B5FEF]/30 to-[#8B5CF6]/30 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="relative z-10">
+          <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-[#5B5FEF] to-[#6C63FF] flex items-center justify-center shadow-blue-lg">
+            <ShieldCheck className="h-8 w-8 text-white" />
           </div>
-          <button onClick={onClose} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors relative z-10"><X className="h-5 w-5" /></button>
+          <h2 className="text-2xl font-black text-slate-900 font-display tracking-tight mb-1.5">Selamat Datang</h2>
+          <p className="text-slate-500 text-sm mb-7 font-medium">Masuk untuk bergabung mewujudkan kota yang lebih baik.</p>
+
+          <form onSubmit={(e) => { e.preventDefault(); onLogin({ email, isAdmin: email.toLowerCase().includes('admin') }); }} className="text-left">
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Email Address</label>
+                <input required type="email" placeholder="contoh: admin@civicvoice.id" className="input-premium" value={email} onChange={(e) => setEmail(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Kata Sandi</label>
+                <input required type="password" placeholder="••••••••" className="input-premium" value={password} onChange={(e) => setPassword(e.target.value)} />
+              </div>
+            </div>
+            <button type="submit" className="btn-primary w-full py-3.5 shadow-blue-lg font-bold text-sm tracking-wide">
+              Masuk Ke Aplikasi
+            </button>
+            <div className="mt-5 bg-[#5B5FEF]/5 border border-[#5B5FEF]/10 rounded-xl p-3.5">
+              <p className="text-[11px] text-[#5B5FEF] font-semibold leading-relaxed">
+                💡 Gunakan <b>'admin'</b> di email untuk mengakses panel Administrator.
+              </p>
+            </div>
+          </form>
         </div>
-        <form onSubmit={(e) => { e.preventDefault(); onLogin({ email, isAdmin: email.toLowerCase().includes('admin') }); }} className="p-8">
-          <div className="space-y-5 mb-6">
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Email Address</label>
-              <input required type="email" placeholder="contoh: admin@civicvoice.id" className="input-premium" value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Kata Sandi</label>
-              <input required type="password" placeholder="••••••••" className="input-premium" value={password} onChange={(e) => setPassword(e.target.value)} />
-            </div>
-          </div>
-          <button type="submit" className="btn-primary w-full py-3.5 shadow-blue-lg font-bold text-sm tracking-wide">
-            Masuk Ke Aplikasi
-          </button>
-        </form>
       </motion.div>
     </div>
   );
@@ -170,9 +196,9 @@ const ReportModal = ({ isOpen, onClose, onSubmit, initialCoords }) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" />
-      <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-modal relative z-10 border border-slate-100 max-h-[90vh] flex flex-col">
-        <div className="bg-gradient-to-r from-brand-blue to-brand-indigo p-6 text-white flex justify-between items-center relative overflow-hidden shrink-0">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-[#1F2937]/40 backdrop-blur-md" />
+      <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="bg-white rounded-[1.75rem] w-full max-w-2xl overflow-hidden shadow-modal relative z-10 border border-slate-100 max-h-[90vh] flex flex-col">
+        <div className="bg-gradient-to-r from-[#5B5FEF] to-[#6C63FF] p-6 text-white flex justify-between items-center relative overflow-hidden shrink-0">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
           <div>
             <h2 className="text-xl font-bold font-display">Buat Laporan Baru</h2>
@@ -233,8 +259,8 @@ const DetailModal = ({ report, isOpen, onClose, onVote }) => {
   const currentStepIndex = timelineSteps.indexOf(report.status) !== -1 ? timelineSteps.indexOf(report.status) : 0;
   return (
     <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" />
-      <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="bg-white rounded-3xl w-full max-w-4xl overflow-hidden shadow-modal relative z-10 flex flex-col max-h-[90vh]">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-[#1F2937]/40 backdrop-blur-md" />
+      <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="bg-white rounded-[1.75rem] w-full max-w-4xl overflow-hidden shadow-modal relative z-10 flex flex-col max-h-[90vh]">
         <div className="relative h-64 shrink-0 overflow-hidden">
           <img src={report.image} alt={report.title} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent"></div>
@@ -312,7 +338,7 @@ const DetailModal = ({ report, isOpen, onClose, onVote }) => {
 };
 
 // ==========================================
-// FOOTER COMPONENT
+// FOOTER (Indigo Gradient)
 // ==========================================
 const Footer = ({ onNavigate }) => {
   const footerLinks = [
@@ -323,60 +349,64 @@ const Footer = ({ onNavigate }) => {
   ];
 
   return (
-  <footer className="bg-slate-900 text-white border-t border-slate-800">
-    <div className="max-w-7xl mx-auto px-6 py-16">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-        <div className="md:col-span-2">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="bg-brand-blue p-2.5 rounded-xl"><Megaphone className="h-5 w-5 text-white" /></div>
-            <span className="text-2xl font-black font-display tracking-tight">Civic<span className="text-brand-blue">Voice</span></span>
+    <footer className="relative overflow-hidden bg-gradient-to-br from-[#5B5FEF] via-[#6C63FF] to-[#8B5CF6] text-white">
+      <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.05] bg-pattern pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-6 py-16 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+          <div className="md:col-span-2">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-white/15 backdrop-blur-sm p-2.5 rounded-xl border border-white/20"><Megaphone className="h-5 w-5 text-white" /></div>
+              <span className="text-2xl font-black font-display tracking-tight">Civic<span className="text-white/90">Voice</span></span>
+            </div>
+            <p className="text-indigo-100/90 text-xs leading-relaxed max-w-sm font-medium">
+              Platform partisipasi publik digital untuk melaporkan, memantau, dan mempercepat penyelesaian isu publik demi terwujudnya tata kelola kota yang responsif.
+            </p>
+            <div className="flex gap-2.5 mt-6">
+              {['🌐', '📱', '💬'].map((icon, i) => (
+                <div key={i} className="w-9 h-9 bg-white/10 hover:bg-white/25 rounded-xl flex items-center justify-center cursor-pointer transition-all text-sm border border-white/20 shadow-sm backdrop-blur-sm">
+                  {icon}
+                </div>
+              ))}
+            </div>
           </div>
-          <p className="text-slate-400 text-xs leading-relaxed max-w-sm font-medium">
-            Platform partisipasi publik digital untuk melaporkan, memantau, dan mempercepat penyelesaian isu publik demi terwujudnya tata kelola kota yang responsif.
-          </p>
-          <div className="flex gap-2.5 mt-6">
-            {['🌐','📱','💬'].map((icon, i) => (
-              <div key={i} className="w-9 h-9 bg-slate-800 hover:bg-brand-blue hover:text-white rounded-xl flex items-center justify-center cursor-pointer transition-all text-sm border border-slate-700/50 shadow-sm">
-                {icon}
-              </div>
-            ))}
+          <div>
+            <h4 className="font-bold text-white mb-4 text-xs uppercase tracking-wider font-display">Tautan Navigasi</h4>
+            <ul className="space-y-2.5">
+              {footerLinks.map(item => (
+                <li key={item.label}>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate(item.view)}
+                    className="text-indigo-100/80 hover:text-white text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5 text-left"
+                  >
+                    <ChevronRight className="h-3 w-3" />{item.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-bold text-white mb-4 text-xs uppercase tracking-wider font-display">Kategori Laporan</h4>
+            <ul className="space-y-2.5">
+              {[{label:'Lingkungan',icon:'🌿'},{label:'Infrastruktur',icon:'🏗️'},{label:'Kesehatan',icon:'❤️'},{label:'Pendidikan',icon:'📚'}].map(item => (
+                <li key={item.label}>
+                  <span className="text-indigo-100/80 hover:text-white text-xs font-semibold cursor-pointer transition-colors flex items-center gap-2">
+                    <span>{item.icon}</span>{item.label}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
-        <div>
-          <h4 className="font-bold text-white mb-4 text-xs uppercase tracking-wider font-display">Tautan Navigasi</h4>
-          <ul className="space-y-2.5">
-            {footerLinks.map(item => (
-              <li key={item.label}>
-                <button
-                  type="button"
-                  onClick={() => onNavigate(item.view)}
-                  className="text-slate-400 hover:text-white text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5 text-left"
-                >
-                  <ChevronRight className="h-3 w-3 text-brand-blue" />{item.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-bold text-white mb-4 text-xs uppercase tracking-wider font-display">Kategori Laporan</h4>
-          <ul className="space-y-2.5">
-            {[{label:'Lingkungan',icon:'🌿'},{label:'Infrastruktur',icon:'🏗️'},{label:'Kesehatan',icon:'❤️'},{label:'Pendidikan',icon:'📚'}].map(item => (
-              <li key={item.label}>
-                <span className="text-slate-400 hover:text-white text-xs font-semibold cursor-pointer transition-colors flex items-center gap-2">
-                  <span>{item.icon}</span>{item.label}
-                </span>
-              </li>
-            ))}
-          </ul>
+        <div className="border-t border-white/15 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-indigo-100/70 font-semibold">
+          <p>© 2026 CivicVoice. Seluruh Hak Cipta Dilindungi.</p>
+          <p className="flex items-center gap-1">Dibuat dengan <Heart className="h-3 w-3 text-red-300 fill-red-300" /> untuk Kota Kita — <span className="text-white font-bold ml-1">CiTech Laos</span></p>
         </div>
       </div>
-      <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500 font-semibold">
-        <p>© 2026 CivicVoice. Seluruh Hak Cipta Dilindungi.</p>
-        <p className="flex items-center gap-1">Kolaborasi Bersama <span className="text-brand-blue font-bold ml-1">CiTech Laos</span></p>
-      </div>
-    </div>
-  </footer>
+    </footer>
   );
 };
 
@@ -392,15 +422,15 @@ const ReportCard = ({ report, onVote, onDetail }) => {
     const rect = card.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
+
     const xc = rect.width / 2;
     const yc = rect.height / 2;
     const dx = (x - xc) / xc;
     const dy = (y - yc) / yc;
-    
+
     const tiltX = dy * -12;
     const tiltY = dx * 12;
-    
+
     card.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.02, 1.02, 1.02)`;
   };
 
@@ -416,11 +446,12 @@ const ReportCard = ({ report, onVote, onDetail }) => {
       onMouseLeave={handleMouseLeave}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card-premium overflow-hidden flex flex-col h-full shadow-card hover:shadow-card-hover interactive-tilt preserve-3d"
+      whileHover={{ y: -6 }}
+      className="bg-white rounded-[1.5rem] overflow-hidden flex flex-col h-full shadow-card hover:shadow-card-hover border border-slate-200/60 interactive-tilt preserve-3d"
     >
       <div className="relative h-52 shrink-0 cursor-pointer overflow-hidden group preserve-3d" onClick={() => onDetail(report)}>
         <img src={report.image} alt={report.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 layer-z-sm" />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 via-transparent to-transparent" />
         <div className="absolute top-4 left-4 layer-z-md"><CategoryBadge category={report.category} /></div>
         <div className="absolute top-4 right-4 layer-z-md"><StatusBadge status={report.status} /></div>
       </div>
@@ -430,10 +461,11 @@ const ReportCard = ({ report, onVote, onDetail }) => {
           <MapPin className="h-3.5 w-3.5 mr-1 text-brand-blue shrink-0" />{report.location}
         </div>
         <p className="text-slate-500 text-xs line-clamp-2 mb-6 flex-1 leading-relaxed font-medium layer-z-xs">{report.description || 'Tidak ada deskripsi detail.'}</p>
-        <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto shrink-0 preserve-3d">
-          <div className="flex items-center gap-1.5 font-black text-lg text-slate-800 font-display layer-z-sm">
-            <ThumbsUp className="h-4.5 w-4.5 text-brand-blue" />
+        <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-100 mt-auto shrink-0 preserve-3d">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#5B5FEF] to-[#6C63FF] text-white px-4 py-2 text-sm font-black font-display shadow-blue layer-z-sm">
+            <ThumbsUp className="h-4 w-4" />
             <span>{report.votes}</span>
+            <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wider opacity-80">dukungan</span>
           </div>
           {report.status === 'Selesai' ? (
             <button disabled className="bg-emerald-50 text-emerald-600 px-5 py-2 rounded-xl text-xs font-bold cursor-not-allowed border border-emerald-100 flex items-center gap-1 layer-z-sm">
@@ -442,7 +474,7 @@ const ReportCard = ({ report, onVote, onDetail }) => {
           ) : (
             <button
               onClick={(e) => { e.stopPropagation(); onVote(report.id); }}
-              className="btn-secondary px-5 py-2 rounded-xl text-xs font-bold layer-z-sm"
+              className="btn-primary px-5 py-2 rounded-full text-xs font-bold shadow-blue layer-z-sm"
             >
               Dukung
             </button>
@@ -453,366 +485,336 @@ const ReportCard = ({ report, onVote, onDetail }) => {
   );
 };
 
-const StatCounter = ({ value, label, icon: Icon, color }) => {
-  const cardRef = useRef(null);
+const HeroStatCard = ({ value, label, icon: Icon, gradient, delay = 0 }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay }}
+    whileHover={{ y: -6 }}
+    className="bg-white rounded-[1.5rem] p-6 shadow-card hover:shadow-card-hover border border-slate-200/60"
+  >
+    <div className={`w-12 h-12 ${gradient} rounded-2xl flex items-center justify-center mb-4 shadow-blue`}>
+      <Icon className="h-6 w-6 text-white" />
+    </div>
+    <div className="text-3.5xl font-black text-slate-900 font-display tracking-tight stat-number">{value}</div>
+    <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1 font-display">{label}</div>
+  </motion.div>
+);
 
-  const handleMouseMove = (e) => {
-    if (!cardRef.current) return;
-    const card = cardRef.current;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    const xc = rect.width / 2;
-    const yc = rect.height / 2;
-    const dx = (x - xc) / xc;
-    const dy = (y - yc) / yc;
-    
-    const tiltX = dy * -15;
-    const tiltY = dx * 15;
-    
-    card.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.03, 1.03, 1.03)`;
-  };
-
-  const handleMouseLeave = () => {
-    if (!cardRef.current) return;
-    cardRef.current.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
-  };
-
-  return (
-    <motion.div
-      ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="text-center bg-white/60 backdrop-blur-sm border border-slate-200/50 rounded-2xl p-4 shadow-sm interactive-tilt shadow-3d-sm preserve-3d cursor-pointer"
-    >
-      <div className={`w-11 h-11 ${color} rounded-xl flex items-center justify-center mx-auto mb-3 shadow-sm layer-z-sm`}>
-        <Icon className="h-5.5 w-5.5 text-white" />
+const WorkflowStep = ({ step, icon: Icon, title, desc, color, delay = 0 }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay }}
+    whileHover={{ y: -6 }}
+    className="bg-white rounded-[1.5rem] p-7 border border-slate-200/60 shadow-card hover:shadow-card-hover group"
+  >
+    <div className="flex items-start justify-between mb-5">
+      <div className={`w-12 h-12 ${color} border rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+        <Icon className="h-6 w-6" />
       </div>
-      <div className="text-2.5xl font-black text-slate-900 font-display tracking-tight stat-number layer-z-md">{value}</div>
-      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1 layer-z-xs">{label}</div>
-    </motion.div>
-  );
-};
-
+      <span className="text-[10px] font-black text-slate-300 font-display tracking-widest">{step}</span>
+    </div>
+    <h3 className="text-lg font-bold text-slate-900 mb-2 font-display">{title}</h3>
+    <p className="text-slate-500 text-xs leading-relaxed font-medium">{desc}</p>
+  </motion.div>
+);
 
 const HomeView = ({ onReportClick, reports, onVote, onDetail, onNavigate }) => {
   const activeReports = reports.filter(r => r.status !== 'Selesai');
   const topReport = activeReports.length > 0 ? [...activeReports].sort((a, b) => b.votes - a.votes)[0] : null;
   const resolvedCount = reports.filter(r => r.status === 'Selesai').length;
   const popularReports = [...reports].sort((a, b) => b.votes - a.votes).slice(0, 3);
+  const totalVotes = reports.reduce((sum, r) => sum + r.votes, 0);
+  const latestNews = [...reports].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 3);
+  const featured = topReport || reports[0];
 
-  // GSAP ScrollTrigger Animations
-  useEffect(() => {
-    // 1. Hero text parallax
-    const heroTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: ".bg-hero",
-        start: "top top",
-        end: "bottom top",
-        scrub: true,
-      }
-    });
-
-    heroTl.to(".hero-3d-title", {
-      y: -50,
-      z: 80,
-      opacity: 0.8,
-      rotationX: 10,
-      duration: 1
-    }, 0);
-
-    heroTl.to(".hero-3d-subtitle", {
-      y: -25,
-      z: 40,
-      opacity: 0.9,
-      rotationX: 5,
-      duration: 1
-    }, 0);
-
-    heroTl.to(".hero-3d-buttons", {
-      y: 10,
-      z: 20,
-      duration: 1
-    }, 0);
-
-    heroTl.to(".hero-3d-stats", {
-      y: -70,
-      z: 110,
-      rotationX: 15,
-      duration: 1
-    }, 0);
-
-    // 2. Multi-layered Scroll 3D Tilting Sections
-    const sections = gsap.utils.toArray(".scroll-3d-section");
-    sections.forEach((sec) => {
-      gsap.fromTo(sec, 
-        { rotateX: 5, transformOrigin: "50% 100%" },
-        { 
-          rotateX: -5, 
-          ease: "none",
-          scrollTrigger: {
-            trigger: sec,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true,
-          }
-        }
-      );
-    });
-
-    // 3. Spotlight Card Parallax & Tilt
-    if (document.querySelector(".spotlight-card-3d")) {
-      gsap.fromTo(".spotlight-card-3d", 
-        { transform: "perspective(1000px) translateZ(-40px) rotateY(-4deg)" },
-        {
-          transform: "perspective(1000px) translateZ(80px) rotateY(4deg)",
-          scrollTrigger: {
-            trigger: ".spotlight-card-3d",
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true,
-          }
-        }
-      );
-    }
-
-    return () => {
-      ScrollTrigger.getAll().forEach(t => t.kill());
-    };
-  }, []);
-
-  // Spotlight card mouse tilt handler
-  const spotlightRef = useRef(null);
-  const handleSpotlightMouseMove = (e) => {
-    if (!spotlightRef.current) return;
-    const card = spotlightRef.current;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    const xc = rect.width / 2;
-    const yc = rect.height / 2;
-    const dx = (x - xc) / xc;
-    const dy = (y - yc) / yc;
-    
-    const tiltX = dy * -8;
-    const tiltY = dx * 8;
-    
-    card.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.01, 1.01, 1.01)`;
-  };
-
-  const handleSpotlightMouseLeave = () => {
-    if (!spotlightRef.current) return;
-    spotlightRef.current.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
-  };
+  const workflows = [
+    { step: '01', icon: Megaphone, title: 'Ajukan Laporan', desc: 'Laporkan masalah di sekitarmu lengkap dengan foto, lokasi, dan kronologi detail.', color: 'bg-indigo-50 text-[#5B5FEF] border-indigo-100/60' },
+    { step: '02', icon: ThumbsUp, title: 'Kumpulkan Dukungan', desc: 'Warga memberikan dukungan untuk memvalidasi urgensi dan prioritas masalah.', color: 'bg-amber-50 text-amber-500 border-amber-100/60' },
+    { step: '03', icon: ShieldCheck, title: 'Verifikasi Petugas', desc: 'Petugas meninjau dan memverifikasi kebenaran laporan secara transparan.', color: 'bg-emerald-50 text-emerald-500 border-emerald-100/60' },
+    { step: '04', icon: CheckCircle2, title: 'Pantau Penyelesaian', desc: 'Ikuti progres penanganan secara real-time hingga status dinyatakan selesai.', color: 'bg-purple-50 text-purple-500 border-purple-100/60' },
+  ];
 
   return (
-    <div className="pt-20 page-enter perspective-container">
-      {/* Hero Section */}
-      <section className="relative py-24 px-6 overflow-hidden bg-hero perspective-container">
-        {/* Procedural Three.js Hero Canvas */}
-        <ThreeHeroCanvas />
+    <div className="pt-16 page-enter">
+      {/* HERO — 2 Kolom */}
+      <section className="relative py-20 px-6 overflow-hidden bg-hero">
+        <div className="absolute inset-0 pointer-events-none bg-pattern-grid" />
+        <div className="absolute -top-32 -right-32 w-[480px] h-[480px] bg-[#5B5FEF]/10 rounded-full blur-3xl blob pointer-events-none" />
+        <div className="absolute bottom-0 -left-24 w-96 h-96 bg-[#8B5CF6]/10 rounded-full blur-3xl blob blob-delay-2 pointer-events-none" />
 
-        {/* Subtle Background Grid & Spinning System (Globe representation) */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:32px_32px]"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-blue-500/10 rounded-full animate-[spin_80s_linear_infinite] pointer-events-none hide-mobile">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-blue-500/40 rounded-full shadow-sm"></div>
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-brand-purple/40 rounded-full shadow-sm"></div>
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-emerald-500/40 rounded-full shadow-sm"></div>
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-pink-500/40 rounded-full shadow-sm"></div>
-        </div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-dashed border-indigo-500/10 rounded-full animate-[spin_50s_linear_infinite] pointer-events-none hide-mobile" style={{ animationDirection: 'reverse' }}></div>
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+            {/* Kiri: Copy */}
+            <div>
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-md border border-[#5B5FEF]/15 px-4 py-2 rounded-full text-xs font-bold text-[#5B5FEF] mb-6 shadow-sm"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Platform Civic-Tech Modern
+              </motion.div>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-4xl md:text-6xl font-black text-slate-900 mb-6 leading-[1.05] font-display tracking-tight"
+              >
+                Suara Anda,<br />
+                <span className="text-gradient font-black">Perubahan Nyata</span><br />
+                Kota Kita
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-base text-slate-500 max-w-lg mb-10 leading-relaxed font-medium"
+              >
+                Laporkan masalah lingkungan, infrastruktur, kesehatan, dan pendidikan di sekitar Anda secara langsung. Bersama wujudkan kota yang tanggap, transparan, dan berkelanjutan.
+              </motion.p>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="flex flex-col sm:flex-row gap-4"
+              >
+                <button onClick={onReportClick} className="btn-primary px-8 py-4 text-base rounded-2xl flex items-center justify-center gap-2 shadow-blue-lg">
+                  <Megaphone className="h-5 w-5" /> Laporkan Sekarang
+                </button>
+                <button onClick={() => onNavigate('peta')} className="btn-secondary px-8 py-4 text-base rounded-2xl flex items-center justify-center gap-2">
+                  <Map className="h-5 w-5 text-brand-blue" /> Lihat Peta Masalah
+                </button>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="flex items-center gap-4 mt-10"
+              >
+                <div className="flex -space-x-3">
+                  {['bg-[#5B5FEF]', 'bg-[#6C63FF]', 'bg-emerald-500', 'bg-amber-500'].map((c, i) => (
+                    <div key={i} className={`w-10 h-10 ${c} rounded-full border-2 border-white flex items-center justify-center text-[10px] font-black text-white font-display`}>
+                      {['A', 'B', 'S', 'D'][i]}
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <p className="text-sm font-black text-slate-900 font-display">1.200+ Warga Aktif</p>
+                  <p className="text-xs text-slate-400 font-semibold">Telah berpartisipasi melaporkan</p>
+                </div>
+              </motion.div>
+            </div>
 
-        {/* Floating background shapes & particles */}
-        <div className="absolute top-12 left-10 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl blob pointer-events-none" />
-        <div className="absolute bottom-12 right-10 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl blob blob-delay-2 pointer-events-none" />
-        <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-emerald-400/5 rounded-full blur-3xl pointer-events-none" />
-
-        {/* Glowing floating particles */}
-        <div className="absolute top-1/4 left-1/5 w-2 h-2 bg-blue-500/30 rounded-full particle-1 pointer-events-none hide-mobile" style={{ animationDelay: '0s' }} />
-        <div className="absolute top-2/3 left-12 w-1.5 h-1.5 bg-indigo-500/25 rounded-full particle-2 pointer-events-none hide-mobile" style={{ animationDelay: '1.5s' }} />
-        <div className="absolute top-1/3 right-1/4 w-2.5 h-2.5 bg-purple-500/25 rounded-full particle-1 pointer-events-none hide-mobile" style={{ animationDelay: '3s' }} />
-        <div className="absolute top-3/4 right-16 w-2 h-2 bg-emerald-500/30 rounded-full particle-2 pointer-events-none hide-mobile" style={{ animationDelay: '4.5s' }} />
-
-        <div className="max-w-7xl mx-auto relative z-10 preserve-3d">
-          <div className="text-center mb-16 preserve-3d">
+            {/* Kanan: Ilustrasi */}
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 bg-blue-50/85 border border-blue-200/50 px-4 py-2 rounded-full text-xs font-bold text-brand-blue mb-6 shadow-sm backdrop-blur-md uppercase tracking-wider layer-z-xs"
-            >
-              <Zap className="h-3.5 w-3.5 animate-pulse" />
-              Platform Smart Civic Reporting
-            </motion.div>
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-4.5xl md:text-6xl font-black text-slate-900 mb-6 leading-none font-display tracking-tight hero-3d-title layer-z-lg"
-            >
-              Suara Anda, <span className="text-gradient font-black">Perubahan</span>
-              <br className="hidden md:block" /> <span className="text-slate-800 font-extrabold">Nyata Kota Kita</span>
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-base text-slate-500 max-w-xl mx-auto mb-10 leading-relaxed font-medium hero-3d-subtitle layer-z-md"
+              className="relative"
             >
-              Laporkan masalah lingkungan, infrastruktur, kesehatan, dan pendidikan di sekitar Anda secara langsung. Bersama wujudkan kota yang tanggap, transparan, dan berkelanjutan.
-            </motion.p>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center hero-3d-buttons layer-z-sm"
-            >
-              <button onClick={onReportClick} className="btn-primary px-8 py-4 text-base rounded-2xl flex items-center justify-center gap-2 shadow-blue-lg">
-                <Megaphone className="h-5 w-5" /> Laporkan Sekarang
-              </button>
-              <button onClick={() => onNavigate('peta')} className="btn-secondary px-8 py-4 text-base rounded-2xl flex items-center justify-center gap-2">
-                <Map className="h-5 w-5 text-brand-blue" /> Lihat Peta Masalah
-              </button>
+              <div className="absolute -inset-4 bg-gradient-to-br from-[#5B5FEF]/20 via-transparent to-[#8B5CF6]/20 rounded-[2.5rem] blur-2xl pointer-events-none" />
+              <div className="relative rounded-[2rem] overflow-hidden shadow-3d-lg border border-white/60">
+                <img
+                  src="/hero_smart_city.png"
+                  alt="Ilustrasi Smart City"
+                  className="w-full h-[420px] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#5B5FEF]/40 via-transparent to-transparent" />
+                <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between gap-3">
+                  <div className="glass-card rounded-2xl px-4 py-3 flex items-center gap-3">
+                    <div className="w-9 h-9 bg-emerald-500/90 rounded-xl flex items-center justify-center">
+                      <CheckCircle2 className="h-4.5 w-4.5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-slate-900 font-display leading-none">{resolvedCount} Selesai</p>
+                      <p className="text-[10px] text-slate-500 font-semibold mt-0.5">Ditangani tuntas</p>
+                    </div>
+                  </div>
+                  <div className="glass-card rounded-2xl px-4 py-3 flex items-center gap-3">
+                    <div className="w-9 h-9 bg-gradient-to-br from-[#5B5FEF] to-[#6C63FF] rounded-xl flex items-center justify-center">
+                      <ThumbsUp className="h-4.5 w-4.5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-slate-900 font-display leading-none">{totalVotes} Dukungan</p>
+                      <p className="text-[10px] text-slate-500 font-semibold mt-0.5">Dari warga kota</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute -top-5 -right-5 glass-card rounded-2xl px-4 py-3 float-slow">
+                <p className="text-xs font-black text-[#5B5FEF] font-display flex items-center gap-1.5">
+                  <Zap className="h-4 w-4" /> Real-time
+                </p>
+              </div>
             </motion.div>
-          </div>
-
-          {/* Stats Row with floating premium effects */}
-          <div className="grid grid-cols-3 gap-5 max-w-lg mx-auto hero-3d-stats preserve-3d">
-            <div className="float preserve-3d" style={{ animationDelay: '0s' }}>
-              <StatCounter value={reports.length} label="Total Laporan" icon={FileText} color="bg-brand-blue" />
-            </div>
-            <div className="float preserve-3d" style={{ animationDelay: '0.6s' }}>
-              <StatCounter value={activeReports.length} label="Masalah Aktif" icon={Activity} color="bg-amber-500" />
-            </div>
-            <div className="float preserve-3d" style={{ animationDelay: '1.2s' }}>
-              <StatCounter value={resolvedCount} label="Selesai Ditangani" icon={CheckCircle2} color="bg-emerald-500" />
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Top Report Spotlight */}
-      {topReport && (
-        <section className="py-12 px-6 bg-white scroll-3d-section perspective-container">
-          <div className="max-w-7xl mx-auto preserve-3d">
-            <motion.div
-              ref={spotlightRef}
-              onMouseMove={handleSpotlightMouseMove}
-              onMouseLeave={handleSpotlightMouseLeave}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-hero-dark rounded-[2.5rem] overflow-hidden shadow-3d-lg border border-slate-800 spotlight-card-3d interactive-tilt preserve-3d transition-transform"
-            >
-              <div className="flex flex-col md:flex-row preserve-3d">
-                <div className="p-10 md:w-3/5 flex flex-col justify-center relative overflow-hidden preserve-3d">
-                  <div className="absolute top-0 left-0 w-40 h-40 bg-brand-blue/5 rounded-full blur-3xl pointer-events-none"></div>
-                  <div className="relative z-10 preserve-3d">
-                    <div className="inline-flex items-center gap-2 bg-red-500/15 border border-red-500/25 px-4 py-1.5 rounded-full text-xs font-bold text-red-400 mb-6 w-fit uppercase tracking-wider layer-z-md">
-                      🔥 Prioritas Penanganan Tertinggi
+      {/* STATISTIK — Card Modern */}
+      <section className="py-16 px-6 bg-white border-y border-slate-100">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            <HeroStatCard value={reports.length} label="Total Laporan" icon={FileText} gradient="bg-gradient-to-br from-[#5B5FEF] to-[#6C63FF]" />
+            <HeroStatCard value={activeReports.length} label="Masalah Aktif" icon={Activity} gradient="bg-gradient-to-br from-amber-400 to-orange-500" delay={0.08} />
+            <HeroStatCard value={resolvedCount} label="Selesai Ditangani" icon={CheckCircle2} gradient="bg-gradient-to-br from-emerald-400 to-green-600" delay={0.16} />
+            <HeroStatCard value={totalVotes} label="Total Dukungan" icon={Heart} gradient="bg-gradient-to-br from-[#8B5CF6] to-[#A78BFA]" delay={0.24} />
+          </div>
+        </div>
+      </section>
+
+      {/* WORKFLOW — 4 Langkah Pastel */}
+      <section className="py-20 px-6 bg-[#FAFAFA]">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-end justify-between mb-12">
+            <div>
+              <h2 className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">Alur Kerja Sistem</h2>
+              <p className="text-slate-500 text-sm font-semibold mt-2">Empat langkah sederhana menuju kota yang lebih responsif.</p>
+            </div>
+            <span className="hidden md:flex items-center gap-2 text-xs font-bold text-[#5B5FEF] bg-[#5B5FEF]/5 border border-[#5B5FEF]/10 rounded-full px-4 py-2">
+              <Sparkles className="h-3.5 w-3.5" /> Terintegrasi & Transparan
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {workflows.map((w, i) => <WorkflowStep key={w.step} {...w} delay={i * 0.1} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* NEWS — Featured + List */}
+      {featured && (
+        <section className="py-20 px-6 bg-white border-y border-slate-100">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-end justify-between mb-12">
+              <div>
+                <div className="inline-flex items-center gap-2 text-xs font-bold text-[#5B5FEF] uppercase tracking-wider mb-3">
+                  <Newspaper className="h-4 w-4" /> Berita & Update
+                </div>
+                <h2 className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">Kabar Terkini Warga</h2>
+              </div>
+              <button
+                onClick={() => onNavigate('laporan')}
+                className="hidden md:flex items-center gap-2 text-sm font-bold text-[#5B5FEF] hover:gap-3 transition-all"
+              >
+                Lihat Semua Laporan <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Featured Card */}
+              <motion.button
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{ y: -6 }}
+                onClick={() => onDetail(featured)}
+                className="lg:col-span-2 text-left bg-slate-900 rounded-[1.75rem] overflow-hidden shadow-3d-lg border border-slate-800 group relative"
+              >
+                <div className="flex flex-col md:flex-row h-full">
+                  <div className="relative md:w-1/2 h-56 md:h-auto overflow-hidden">
+                    <img src={featured.image} alt={featured.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent md:from-transparent md:bg-gradient-to-r md:from-slate-950/60" />
+                  </div>
+                  <div className="p-8 md:w-1/2 flex flex-col justify-center">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="bg-red-500/15 border border-red-500/30 text-red-400 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">🔥 Prioritas Utama</span>
+                      <span className="text-slate-400 text-[10px] font-semibold flex items-center gap-1"><Clock className="h-3 w-3" /> {fmtDate(featured.createdAt)}</span>
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight font-display tracking-tight layer-z-lg">{topReport.title}</h2>
-                    <p className="text-slate-400 mb-4 flex items-center gap-2 text-xs font-semibold layer-z-sm"><MapPin className="h-4 w-4 text-brand-blue" />{topReport.location}</p>
-                    <p className="text-slate-350 text-xs md:text-sm mb-8 leading-relaxed font-medium line-clamp-3 layer-z-xs">{topReport.description}</p>
-                    <div className="flex items-center gap-5 preserve-3d">
-                      <button onClick={() => onDetail(topReport)} className="btn-secondary px-6 py-3 bg-white hover:bg-slate-100 text-slate-900 border-none text-xs rounded-xl font-bold shadow-md layer-z-sm">
-                        Detail Kronologi <ArrowRight className="h-3.5 w-3.5 ml-1" />
-                      </button>
-                      <div className="flex items-center gap-2 text-white text-xs font-bold font-display layer-z-sm">
-                        <ThumbsUp className="h-4.5 w-4.5 text-brand-blue" />
-                        <span>{topReport.votes} dukungan warga</span>
-                      </div>
+                    <h3 className="text-2xl font-extrabold text-white mb-3 font-display leading-snug">{featured.title}</h3>
+                    <p className="text-slate-400 text-xs leading-relaxed mb-4 line-clamp-3 font-medium">{featured.description}</p>
+                    <div className="flex items-center gap-4 mt-auto">
+                      <span className="inline-flex items-center gap-1.5 text-white font-black font-display text-sm">
+                        <ThumbsUp className="h-4 w-4 text-[#6C63FF]" /> {featured.votes} dukungan
+                      </span>
+                      <span className="text-xs font-bold text-[#6C63FF] flex items-center gap-1">
+                        Baca Detail <ArrowRight className="h-3.5 w-3.5" />
+                      </span>
                     </div>
                   </div>
                 </div>
-                <div className="md:w-2/5 h-72 md:h-auto relative overflow-hidden preserve-3d">
-                  <img src={topReport.image} alt={topReport.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 layer-z-sm" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent md:from-transparent md:bg-gradient-to-l md:from-slate-950/40" />
-                </div>
+              </motion.button>
+
+              {/* Side News List */}
+              <div className="flex flex-col gap-6">
+                {latestNews.map((r, i) => (
+                  <motion.button
+                    key={r.id}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 + i * 0.1 }}
+                    whileHover={{ x: 4 }}
+                    onClick={() => onDetail(r)}
+                    className="flex-1 text-left bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover p-4 flex gap-4 items-center"
+                  >
+                    <img src={r.image} alt={r.title} className="w-20 h-20 rounded-xl object-cover shrink-0 border border-slate-100" />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5"><CategoryBadge category={r.category} /></div>
+                      <h4 className="text-xs font-bold text-slate-900 line-clamp-2 leading-snug">{r.title}</h4>
+                      <p className="text-[10px] text-slate-400 font-semibold mt-1 flex items-center gap-1">
+                        <Clock className="h-3 w-3" /> {fmtDate(r.createdAt)}
+                      </p>
+                    </div>
+                  </motion.button>
+                ))}
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
       )}
 
-      {/* Popular Reports */}
-      <section className="py-20 px-6 bg-slate-50/50 scroll-3d-section perspective-container">
-        <div className="max-w-7xl mx-auto preserve-3d">
-          <div className="flex items-end justify-between mb-10">
+      {/* LAPORAN POPULER */}
+      <section className="py-20 px-6 bg-[#FAFAFA]">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-end justify-between mb-12">
             <div>
               <h2 className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">Laporan Terpopuler</h2>
-              <p className="text-slate-500 text-xs font-semibold mt-1">Aspirasi publik dengan dukungan terbanyak minggu ini</p>
+              <p className="text-slate-500 text-sm font-semibold mt-2">Aspirasi publik dengan dukungan terbanyak minggu ini.</p>
             </div>
-            <div className="flex items-center gap-1.5 text-brand-blue font-bold text-xs cursor-pointer hover:gap-2.5 transition-all uppercase tracking-wider" onClick={() => onNavigate('laporan')}>
-              Lihat Laporan Lain <ChevronRight className="h-4 w-4" />
-            </div>
+            <button
+              onClick={() => onNavigate('laporan')}
+              className="hidden md:flex items-center gap-2 text-sm font-bold text-[#5B5FEF] hover:gap-3 transition-all"
+            >
+              Lihat Semua <ArrowRight className="h-4 w-4" />
+            </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 preserve-3d">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {popularReports.map(r => <ReportCard key={r.id} report={r} onVote={onVote} onDetail={onDetail} />)}
           </div>
+          {popularReports.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-slate-400 text-sm font-semibold">Belum ada laporan publik.</p>
+              <button onClick={onReportClick} className="btn-primary px-6 py-3 rounded-xl text-sm mt-4 shadow-blue">Buat Laporan Pertama</button>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* How it Works */}
-      <section className="py-20 px-6 bg-white scroll-3d-section perspective-container">
-        <div className="max-w-7xl mx-auto text-center preserve-3d">
-          <h2 className="text-3xl font-extrabold text-slate-900 mb-4 font-display tracking-tight">Alur Kerja Sistem</h2>
-          <p className="text-slate-500 text-xs font-semibold mb-16 max-w-sm mx-auto">Tiga tahapan integrasi untuk akselerasi penyelesaian masalah</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 preserve-3d">
-            {[
-              { step: '01', icon: Megaphone, title: 'Ajukan Laporan', desc: 'Identifikasi masalah di sekitarmu, ambil foto, pin lokasi peta, dan isi detail kronologi laporan.', color: 'bg-blue-50 text-blue-600 border-blue-100/50' },
-              { step: '02', icon: ThumbsUp, title: 'Kumpulkan Dukungan', desc: 'Warga memberikan vote dukungan untuk memvalidasi urgensi laporan demi prioritas utama.', color: 'bg-amber-50 text-amber-600 border-amber-100/50' },
-              { step: '03', icon: CheckCircle2, title: 'Monitor Penyelesaian', desc: 'Pantau status penanganan oleh instansi berwenang secara transparan hingga status selesai.', color: 'bg-emerald-50 text-emerald-600 border-emerald-100/50' },
-            ].map((item, i) => {
-              const cardRef = useRef(null);
-
-              const handleStepMouseMove = (e) => {
-                if (!cardRef.current) return;
-                const card = cardRef.current;
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                const xc = rect.width / 2;
-                const yc = rect.height / 2;
-                const dx = (x - xc) / xc;
-                const dy = (y - yc) / yc;
-                
-                const tiltX = dy * -10;
-                const tiltY = dx * 10;
-                
-                card.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.02, 1.02, 1.02)`;
-              };
-
-              const handleStepMouseLeave = () => {
-                if (!cardRef.current) return;
-                cardRef.current.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
-              };
-
-              return (
-                <motion.div
-                  ref={cardRef}
-                  onMouseMove={handleStepMouseMove}
-                  onMouseLeave={handleStepMouseLeave}
-                  key={item.step}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="card-premium bg-slate-50/40 p-8 text-center border border-slate-200/40 hover:shadow-card-hover interactive-tilt preserve-3d"
-                >
-                  <div className={`w-14 h-14 ${item.color} border rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm layer-z-sm`}>
-                    <item.icon className="h-6.5 w-6.5" />
-                  </div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 font-display layer-z-xs">{item.step}</div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-2.5 font-display layer-z-md">{item.title}</h3>
-                  <p className="text-slate-500 text-xs leading-relaxed font-medium layer-z-sm">{item.desc}</p>
-                </motion.div>
-              );
-            })}
-          </div>
+      {/* CTA BANNER */}
+      <section className="py-20 px-6 bg-white border-t border-slate-100">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -4 }}
+            className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#5B5FEF] via-[#6C63FF] to-[#8B5CF6] p-10 md:p-14 text-center text-white shadow-3d-lg"
+          >
+            <div className="absolute inset-0 opacity-[0.08] bg-pattern pointer-events-none" />
+            <div className="absolute -top-16 -right-16 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10">
+              <h2 className="text-3xl md:text-4xl font-black font-display tracking-tight mb-3">Siap Jadi Bagian dari Perubahan?</h2>
+              <p className="text-indigo-100 text-sm md:text-base mb-8 font-medium max-w-xl mx-auto">Laporkan masalah di sekitarmu sekarang dan bantu kota kita menjadi lebih baik.</p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onClick={onReportClick} className="bg-white text-[#5B5FEF] px-8 py-4 rounded-2xl font-bold text-sm hover:bg-indigo-50 hover:-translate-y-0.5 transition-all shadow-xl flex items-center justify-center gap-2">
+                  <Megaphone className="h-5 w-5" /> Laporkan Sekarang
+                </button>
+                <button onClick={() => onNavigate('laporan')} className="border-2 border-white/40 text-white px-8 py-4 rounded-2xl font-bold text-sm hover:bg-white/10 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+                  Jelajahi Laporan <ArrowRight className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -841,33 +843,41 @@ const LaporanView = ({ onReportClick, reports, onVote, onDetail }) => {
   const paginated = filtered.slice((page - 1) * REPORTS_PER_PAGE, page * REPORTS_PER_PAGE);
 
   return (
-    <div className="pt-28 pb-24 bg-slate-50/50 min-h-screen px-6 page-enter">
+    <div className="pt-24 pb-24 bg-[#FAFAFA] min-h-screen px-6 page-enter">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 font-display tracking-tight">Semua Laporan Warga</h1>
-            <p className="text-slate-500 text-xs font-semibold mt-1">Daftar aspirasi warga terpublikasi: {filtered.length} laporan aktif</p>
+            <p className="text-slate-500 text-sm font-semibold mt-2">Daftar aspirasi warga terpublikasi: {filtered.length} laporan aktif</p>
           </div>
-          <button onClick={onReportClick} className="btn-primary px-6 py-3 text-xs rounded-xl shadow-blue flex items-center gap-2 w-fit">
+          <button onClick={onReportClick} className="btn-primary px-6 py-3 text-xs rounded-2xl shadow-blue flex items-center gap-2 w-fit">
             <Megaphone className="h-4 w-4" /> Kirim Laporan Baru
           </button>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-4 mb-8 flex flex-col md:flex-row gap-3">
+        {/* Stat Summary */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <MiniStatCard label="Total Laporan" value={reports.length} icon={FileText} color="text-brand-blue" bg="bg-[#EEEDFF]" />
+          <MiniStatCard label="Perlu Verifikasi" value={reports.filter(r => r.status === 'Dilaporkan').length} icon={AlertCircle} color="text-red-500" bg="bg-red-50" delay={0.05} />
+          <MiniStatCard label="Dalam Proses" value={reports.filter(r => r.status === 'Diproses' || r.status === 'Diverifikasi').length} icon={Activity} color="text-blue-500" bg="bg-blue-50" delay={0.1} />
+          <MiniStatCard label="Selesai Ditangani" value={reports.filter(r => r.status === 'Selesai').length} icon={CheckCircle2} color="text-emerald-500" bg="bg-emerald-50" delay={0.15} />
+        </div>
+
+        {/* Search + Filter Bar */}
+        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-card p-4 mb-8 flex flex-col lg:flex-row gap-3">
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
               type="text"
               placeholder="Cari kata kunci laporan atau lokasi..."
-              className="input-premium pl-10 py-2.5 text-xs"
+              className="input-premium pl-10 py-2.5 text-xs rounded-xl"
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1); }}
             />
           </div>
           <select
-            className="input-premium md:w-48 py-2.5 text-xs font-semibold"
+            className="input-premium md:w-48 py-2.5 text-xs font-semibold rounded-xl"
             value={filterCat}
             onChange={e => { setFilterCat(e.target.value); setPage(1); }}
           >
@@ -878,7 +888,7 @@ const LaporanView = ({ onReportClick, reports, onVote, onDetail }) => {
             <option value="Pendidikan">📚 Pendidikan</option>
           </select>
           <select
-            className="input-premium md:w-48 py-2.5 text-xs font-semibold"
+            className="input-premium md:w-48 py-2.5 text-xs font-semibold rounded-xl"
             value={filterStatus}
             onChange={e => { setFilterStatus(e.target.value); setPage(1); }}
           >
@@ -891,7 +901,7 @@ const LaporanView = ({ onReportClick, reports, onVote, onDetail }) => {
           {(search || filterCat !== 'Semua' || filterStatus !== 'Semua') && (
             <button
               onClick={() => { setSearch(''); setFilterCat('Semua'); setFilterStatus('Semua'); setPage(1); }}
-              className="btn-secondary px-4 py-2.5 text-xs font-bold flex items-center gap-2 whitespace-nowrap"
+              className="btn-secondary px-4 py-2.5 text-xs font-bold flex items-center gap-2 whitespace-nowrap rounded-xl"
             >
               <X className="h-4 w-4" /> Atur Ulang
             </button>
@@ -925,7 +935,7 @@ const LaporanView = ({ onReportClick, reports, onVote, onDetail }) => {
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="btn-secondary w-9 h-9 rounded-xl flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed text-slate-500"
+              className="btn-secondary w-9 h-9 rounded-full flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed text-slate-500"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -933,7 +943,7 @@ const LaporanView = ({ onReportClick, reports, onVote, onDetail }) => {
               <button
                 key={p}
                 onClick={() => setPage(p)}
-                className={`w-9 h-9 rounded-xl font-bold text-xs transition-all ${page === p ? 'bg-brand-blue text-white shadow-blue' : 'btn-secondary text-slate-700 border-slate-200'}`}
+                className={`w-9 h-9 rounded-full font-bold text-xs transition-all ${page === p ? 'bg-gradient-to-br from-[#5B5FEF] to-[#6C63FF] text-white shadow-blue' : 'btn-secondary text-slate-700 border-slate-200'}`}
               >
                 {p}
               </button>
@@ -941,7 +951,7 @@ const LaporanView = ({ onReportClick, reports, onVote, onDetail }) => {
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="btn-secondary w-9 h-9 rounded-xl flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed text-slate-500"
+              className="btn-secondary w-9 h-9 rounded-full flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed text-slate-500"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -962,7 +972,7 @@ const DashboardView = ({ reports }) => {
     labels: Object.keys(categoryCount),
     datasets: [{
       data: Object.values(categoryCount),
-      backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#a855f7'],
+      backgroundColor: ['#22C55E', '#5B5FEF', '#EF4444', '#8B5CF6'],
       borderWidth: 0,
       hoverOffset: 6,
     }]
@@ -980,7 +990,7 @@ const DashboardView = ({ reports }) => {
     datasets: [{
       label: 'Jumlah Laporan',
       data: [statusCount['Dilaporkan'], statusCount['Diverifikasi'], statusCount['Diproses'], statusCount['Selesai']],
-      backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981'],
+      backgroundColor: ['#EF4444', '#F59E0B', '#5B5FEF', '#22C55E'],
       borderRadius: 8,
     }]
   };
@@ -1015,11 +1025,65 @@ const DashboardView = ({ reports }) => {
   const totalVotes = reports.reduce((sum, r) => sum + r.votes, 0);
 
   const statCards = [
-    { label: 'Total Laporan', value: reports.length, icon: FileText, color: 'text-brand-blue', bg: 'bg-blue-50', border: 'border-blue-100/50' },
+    { label: 'Total Laporan', value: reports.length, icon: FileText, color: 'text-brand-blue', bg: 'bg-[#EEEDFF]', border: 'border-indigo-100/50' },
     { label: 'Tahap Verifikasi', value: statusCount['Diverifikasi'], icon: AlertCircle, color: 'text-amber-500', bg: 'bg-amber-50', border: 'border-amber-100/50' },
     { label: 'Dalam Proses', value: statusCount['Diproses'], icon: Activity, color: 'text-blue-500', bg: 'bg-blue-50', border: 'border-blue-100/50' },
     { label: 'Selesai Ditangani', value: statusCount['Selesai'], icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-50', border: 'border-emerald-100/50' },
   ];
+
+  const sortedCategories = Object.entries(categoryCount).sort((a, b) => b[1] - a[1]);
+  const maxCategory = sortedCategories.length > 0 ? sortedCategories[0][1] : 1;
+  const categoryColors = {
+    'Lingkungan': 'bg-emerald-500',
+    'Infrastruktur': 'bg-[#5B5FEF]',
+    'Kesehatan': 'bg-red-500',
+    'Pendidikan': 'bg-purple-500',
+  };
+  const categoryIcons = { 'Lingkungan': '🌿', 'Infrastruktur': '🏗️', 'Kesehatan': '❤️', 'Pendidikan': '📚' };
+
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  const monthCount = {};
+  reports.forEach(r => {
+    const m = new Date(r.createdAt).getMonth();
+    monthCount[m] = (monthCount[m] || 0) + 1;
+  });
+  const sortedMonths = Object.keys(monthCount).sort((a, b) => a - b).map(Number);
+
+  const lineData = {
+    labels: sortedMonths.map(m => monthNames[m]),
+    datasets: [{
+      label: 'Laporan Masuk',
+      data: sortedMonths.map(m => monthCount[m]),
+      borderColor: '#5B5FEF',
+      backgroundColor: 'rgba(91, 95, 239, 0.08)',
+      pointBackgroundColor: '#5B5FEF',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      tension: 0.4,
+      fill: true,
+    }]
+  };
+
+  const lineOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1, font: { size: 10, weight: 'bold' }, color: '#94a3b8' },
+        grid: { color: '#f1f5f9' },
+      },
+      x: {
+        ticks: { font: { size: 10, weight: 'bold' }, color: '#64748b' },
+        grid: { display: false }
+      }
+    }
+  };
+
+  const priorityReports = [...reports].sort((a, b) => b.votes - a.votes).slice(0, 4);
+  const latestReports = [...reports].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 6);
 
   return (
     <div className="pb-20 min-h-screen px-6 page-enter">
@@ -1037,6 +1101,7 @@ const DashboardView = ({ reports }) => {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.07 }}
+              whileHover={{ y: -4 }}
               className={`card-premium bg-white p-6 shadow-card hover:shadow-card-hover border border-slate-200/50`}
             >
               <div className={`w-10 h-10 ${card.bg} rounded-xl flex items-center justify-center mb-4 border border-slate-200/20`}>
@@ -1049,27 +1114,144 @@ const DashboardView = ({ reports }) => {
         </div>
 
         {/* Charts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
           <div className="chart-container shadow-card">
-            <h3 className="font-extrabold text-slate-900 mb-6 text-sm uppercase tracking-wider font-display text-slate-400">Distribusi Kategori</h3>
-            <div className="h-72 flex justify-center"><Pie data={pieData} options={pieOptions} /></div>
+            <h3 className="font-extrabold text-slate-900 mb-6 text-sm uppercase tracking-wider font-display text-slate-400">Tren Laporan Per Bulan</h3>
+            <div className="h-72"><Line data={lineData} options={lineOptions} /></div>
           </div>
           <div className="chart-container shadow-card">
             <h3 className="font-extrabold text-slate-900 mb-6 text-sm uppercase tracking-wider font-display text-slate-400">Status Penanganan</h3>
             <div className="h-72"><Bar data={barData} options={barOptions} /></div>
           </div>
+          <div className="chart-container shadow-card">
+            <h3 className="font-extrabold text-slate-900 mb-6 text-sm uppercase tracking-wider font-display text-slate-400">Distribusi Kategori</h3>
+            <div className="h-72 flex justify-center"><Doughnut data={pieData} options={pieOptions} /></div>
+          </div>
+        </div>
+
+        {/* Ranking + Prioritas */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="chart-container shadow-card">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-extrabold text-slate-900 text-sm uppercase tracking-wider font-display text-slate-400">Ranking Kategori</h3>
+              <Award className="h-4 w-4 text-amber-500" />
+            </div>
+            <div className="space-y-5">
+              {sortedCategories.map(([cat, count]) => (
+                <div key={cat}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-slate-700 flex items-center gap-2">
+                      <span className="text-sm">{categoryIcons[cat] || '📌'}</span>{cat}
+                    </span>
+                    <span className="text-xs font-black text-slate-500 font-display">{count} laporan</span>
+                  </div>
+                  <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(count / maxCategory) * 100}%` }}
+                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                      className={`h-full rounded-full ${categoryColors[cat] || 'bg-brand-blue'}`}
+                    />
+                  </div>
+                </div>
+              ))}
+              {sortedCategories.length === 0 && <p className="text-slate-400 text-xs">Belum ada data kategori.</p>}
+            </div>
+          </div>
+
+          <div className="chart-container shadow-card">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-extrabold text-slate-900 text-sm uppercase tracking-wider font-display text-slate-400">Laporan Prioritas</h3>
+              <TrendingUp className="h-4 w-4 text-brand-blue" />
+            </div>
+            <div className="space-y-3">
+              {priorityReports.map((r, idx) => (
+                <div key={r.id} className="flex items-center gap-4 p-3.5 rounded-2xl border border-slate-100 bg-slate-50/40 hover:bg-blue-50/40 hover:border-blue-200/40 transition-colors">
+                  <div className={`w-9 h-9 shrink-0 rounded-xl flex items-center justify-center font-black font-display text-xs ${idx === 0 ? 'bg-amber-100 text-amber-600' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-600' : 'bg-[#EEEDFF] text-brand-blue'}`}>
+                    #{idx + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-slate-800 truncate">{r.title}</p>
+                    <p className="text-[10px] font-semibold text-slate-400 mt-0.5 flex items-center gap-1">
+                      <MapPin className="h-3 w-3 text-brand-blue shrink-0" />{r.location}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-black text-slate-800 font-display flex items-center gap-1 justify-end">
+                      <ThumbsUp className="h-3.5 w-3.5 text-brand-blue" />{r.votes}
+                    </p>
+                    <div className="mt-1.5"><StatusBadge status={r.status} /></div>
+                  </div>
+                </div>
+              ))}
+              {priorityReports.length === 0 && <p className="text-slate-400 text-xs">Belum ada laporan.</p>}
+            </div>
+          </div>
+        </div>
+
+        {/* Tabel Laporan Terbaru */}
+        <div className="chart-container shadow-card mb-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="font-extrabold text-slate-900 text-sm uppercase tracking-wider font-display text-slate-400">Laporan Terbaru</h3>
+            <FileText className="h-4 w-4 text-brand-blue" />
+          </div>
+          <div className="overflow-x-auto -mx-6 px-6">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <th className="pb-3 pr-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider font-display">No</th>
+                  <th className="pb-3 pr-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider font-display">Laporan</th>
+                  <th className="pb-3 pr-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider font-display">Kategori</th>
+                  <th className="pb-3 pr-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider font-display">Lokasi</th>
+                  <th className="pb-3 pr-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider font-display">Dukungan</th>
+                  <th className="pb-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider font-display">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {latestReports.map((r, idx) => (
+                  <tr key={r.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/60 transition-colors">
+                    <td className="py-4 pr-4 text-xs font-black text-slate-400 font-display">{String(idx + 1).padStart(2, '0')}</td>
+                    <td className="py-4 pr-4">
+                      <div className="flex items-center gap-3">
+                        <img src={r.image} alt={r.title} className="w-10 h-10 rounded-lg object-cover shrink-0 border border-slate-100" />
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-800 truncate max-w-56">{r.title}</p>
+                          <p className="text-[10px] text-slate-400 font-medium truncate max-w-56">{r.description}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 pr-4"><CategoryBadge category={r.category} /></td>
+                    <td className="py-4 pr-4">
+                      <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                        <MapPin className="h-3 w-3 text-brand-blue shrink-0" />{r.location}
+                      </span>
+                    </td>
+                    <td className="py-4 pr-4">
+                      <span className="text-xs font-black text-slate-800 font-display flex items-center gap-1">
+                        <ThumbsUp className="h-3.5 w-3.5 text-brand-blue" />{r.votes}
+                      </span>
+                    </td>
+                    <td className="py-4"><StatusBadge status={r.status} /></td>
+                  </tr>
+                ))}
+                {latestReports.length === 0 && (
+                  <tr><td colSpan="6" className="py-8 text-center text-xs text-slate-400">Belum ada laporan terbaru.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Summary Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div className="bg-gradient-to-br from-brand-blue to-brand-indigo p-6 rounded-2xl text-white shadow-blue flex flex-col justify-between min-h-32">
+          <div className="bg-gradient-to-br from-[#5B5FEF] to-[#6C63FF] p-6 rounded-2xl text-white shadow-blue flex flex-col justify-between min-h-32">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-xs font-bold text-blue-200 uppercase tracking-wider font-display">Akumulasi Dukungan</p>
-              <ThumbsUp className="h-4.5 w-4.5 text-blue-300" />
+              <p className="text-xs font-bold text-indigo-200 uppercase tracking-wider font-display">Akumulasi Dukungan</p>
+              <ThumbsUp className="h-4.5 w-4.5 text-indigo-200" />
             </div>
             <div>
               <p className="text-3.5xl font-black font-display stat-number">{totalVotes}</p>
-              <p className="text-blue-200/80 text-[10px] mt-1.5 font-semibold">Total vote dari warga untuk seluruh laporan</p>
+              <p className="text-indigo-200/80 text-[10px] mt-1.5 font-semibold">Total vote dari warga untuk seluruh laporan</p>
             </div>
           </div>
           <div className="card-premium bg-white p-6 shadow-card hover:shadow-card-hover border border-slate-200/50 flex flex-col justify-between min-h-32">
@@ -1139,8 +1321,8 @@ const MapPage = ({ reports, onDetail, onLocationSelected, hideSidebar = false })
   const markerColors = {
     'Dilaporkan': '#ef4444',
     'Diverifikasi': '#f59e0b',
-    'Diproses': '#3b82f6',
-    'Selesai': '#10b981',
+    'Diproses': '#5B5FEF',
+    'Selesai': '#22C55E',
   };
 
   const getMarkerIcon = (r) => L.divIcon({
@@ -1182,14 +1364,41 @@ const MapPage = ({ reports, onDetail, onLocationSelected, hideSidebar = false })
   const legendItems = [
     { label: 'Dilaporkan', color: '#ef4444' },
     { label: 'Diverifikasi', color: '#f59e0b' },
-    { label: 'Diproses', color: '#3b82f6' },
-    { label: 'Selesai', color: '#10b981' },
+    { label: 'Diproses', color: '#5B5FEF' },
+    { label: 'Selesai', color: '#22C55E' },
   ];
 
+  const statusSummary = {
+    'Dilaporkan': filtered.filter(r => r.status === 'Dilaporkan').length,
+    'Diverifikasi': filtered.filter(r => r.status === 'Diverifikasi').length,
+    'Diproses': filtered.filter(r => r.status === 'Diproses').length,
+    'Selesai': filtered.filter(r => r.status === 'Selesai').length,
+  };
+
   return (
-    <div className={`${hideSidebar ? 'h-[calc(100vh-5rem)] rounded-3xl overflow-hidden shadow-card border border-slate-200/50' : 'pt-20 h-screen'} w-full relative flex page-enter`}>
+    <div className={`${hideSidebar ? 'h-full' : 'pt-24 h-screen'} w-full relative flex flex-col page-enter`}>
       {!hideSidebar && (
-        <div className="w-80 bg-white border-r border-slate-100 flex flex-col h-full z-10 shadow-nav">
+        <div className="px-6 pt-8 pb-5 shrink-0">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+            <div>
+              <h1 className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">Peta Masalah Publik</h1>
+              <p className="text-slate-500 text-xs font-semibold mt-1">Visualisasi spasial lokasi pengaduan warga secara real-time</p>
+            </div>
+            <div className="flex items-center gap-1.5 text-brand-blue font-bold text-xs uppercase tracking-wider w-fit">
+              <Map className="h-4 w-4" /> {filtered.length} titik aktif
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <MiniStatCard label="Total Titik" value={filtered.length} icon={MapPin} color="text-brand-blue" bg="bg-[#EEEDFF]" />
+            <MiniStatCard label="Dilaporkan" value={statusSummary['Dilaporkan']} icon={AlertCircle} color="text-red-500" bg="bg-red-50" delay={0.05} />
+            <MiniStatCard label="Dalam Proses" value={statusSummary['Diproses'] + statusSummary['Diverifikasi']} icon={Activity} color="text-blue-500" bg="bg-blue-50" delay={0.1} />
+            <MiniStatCard label="Selesai" value={statusSummary['Selesai']} icon={CheckCircle2} color="text-emerald-500" bg="bg-emerald-50" delay={0.15} />
+          </div>
+        </div>
+      )}
+      <div className={`flex flex-1 min-h-0 ${hideSidebar ? 'rounded-3xl overflow-hidden shadow-card border border-slate-200/50' : 'overflow-hidden'}`}>
+        {!hideSidebar && (
+          <div className="w-80 bg-white border-r border-slate-100 flex flex-col h-full z-10 shadow-nav">
           <div className="p-6 border-b border-slate-100">
             <h3 className="font-extrabold text-lg text-slate-900 mb-4 flex items-center gap-2 font-display">
               <Filter className="h-4.5 w-4.5 text-brand-blue" /> Filter Laporan
@@ -1259,7 +1468,7 @@ const MapPage = ({ reports, onDetail, onLocationSelected, hideSidebar = false })
                   className="bg-white p-4 rounded-2xl border border-slate-150 cursor-pointer hover:border-brand-blue hover:shadow-sm hover:translate-x-0.5 transition-all"
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <span className="text-[9px] font-extrabold text-brand-blue bg-blue-50/70 border border-blue-100/35 px-2 py-0.5 rounded-md uppercase tracking-wide">{r.category}</span>
+                    <span className="text-[9px] font-extrabold text-brand-blue bg-[#EEEDFF]/70 border border-indigo-100/35 px-2 py-0.5 rounded-md uppercase tracking-wide">{r.category}</span>
                     <span className="w-2 h-2 rounded-full shrink-0 mt-1.5" style={{ backgroundColor: markerColors[r.status] || '#6b7280' }}></span>
                   </div>
                   <h4 className="font-bold text-xs text-slate-800 line-clamp-2 mb-1 leading-normal">{r.title}</h4>
@@ -1273,8 +1482,8 @@ const MapPage = ({ reports, onDetail, onLocationSelected, hideSidebar = false })
           </div>
 
           {onLocationSelected && (
-            <div className="p-4 border-t border-slate-150 bg-blue-50/40 shrink-0">
-              <p className="text-[10px] text-blue-700 font-bold flex items-center gap-2 leading-relaxed">
+            <div className="p-4 border-t border-slate-150 bg-[#EEEDFF]/40 shrink-0">
+              <p className="text-[10px] text-[#5B5FEF] font-bold flex items-center gap-2 leading-relaxed">
                 <MapPin className="h-4.5 w-4.5 text-brand-blue shrink-0" />
                 Klik titik koordinat peta untuk melaporkan masalah secara spesifik.
               </p>
@@ -1283,7 +1492,7 @@ const MapPage = ({ reports, onDetail, onLocationSelected, hideSidebar = false })
         </div>
       )}
 
-      <div className="flex-1 relative z-0">
+      <div className="flex-1 relative z-0 min-h-0">
         <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
           <TileLayer
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
@@ -1319,6 +1528,7 @@ const MapPage = ({ reports, onDetail, onLocationSelected, hideSidebar = false })
           ))}
         </MapContainer>
       </div>
+      </div>
     </div>
   );
 };
@@ -1328,9 +1538,9 @@ const MapPage = ({ reports, onDetail, onLocationSelected, hideSidebar = false })
 // ==========================================
 const AdminSidebar = ({ active, setActive, onLogout }) => (
   <div className="w-64 admin-sidebar text-white flex flex-col h-screen fixed top-0 left-0 z-20">
-    <div className="p-6 flex items-center gap-3 border-b border-slate-800">
-      <div className="bg-brand-blue p-2.5 rounded-xl shadow-lg shadow-blue-500/25"><ShieldCheck className="h-4.5 w-4.5 text-white" /></div>
-      <span className="text-xl font-black font-display tracking-tight">Admin<span className="text-brand-blue">Hub</span></span>
+    <div className="p-6 flex items-center gap-3 border-b border-white/10">
+      <div className="bg-gradient-to-br from-[#5B5FEF] to-[#6C63FF] p-2.5 rounded-xl shadow-blue"><ShieldCheck className="h-4.5 w-4.5 text-white" /></div>
+      <span className="text-xl font-black font-display tracking-tight">Admin<span className="text-[#6C63FF]">Hub</span></span>
     </div>
     <div className="p-4 flex-1 space-y-1.5">
       {[
@@ -1341,13 +1551,13 @@ const AdminSidebar = ({ active, setActive, onLogout }) => (
         <button
           key={item.id}
           onClick={() => setActive(item.id)}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all text-xs ${active === item.id ? 'bg-brand-blue text-white shadow-blue' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all text-xs ${active === item.id ? 'bg-gradient-to-r from-[#5B5FEF] to-[#6C63FF] text-white shadow-blue' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
         >
           <item.icon className="h-4 w-4" /> {item.label}
         </button>
       ))}
     </div>
-    <div className="p-4 border-t border-slate-800">
+    <div className="p-4 border-t border-white/10">
       <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl font-bold transition-all text-xs">
         <LogOut className="h-4 w-4" /> Keluar Sesi
       </button>
@@ -1366,7 +1576,7 @@ const AdminHeader = ({ title, subtitle, user }) => (
         <p className="text-xs font-bold text-slate-800 leading-tight">{user?.email || 'Administrator'}</p>
         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Sistem Admin</p>
       </div>
-      <div className="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center shadow-blue">
+      <div className="w-10 h-10 bg-gradient-to-br from-[#5B5FEF] to-[#6C63FF] rounded-xl flex items-center justify-center shadow-blue">
         <ShieldCheck className="h-5 w-5 text-white" />
       </div>
     </div>
@@ -1412,6 +1622,14 @@ const AdminLaporan = ({ reports, onUpdateStatus }) => {
             <option value="Selesai">Selesai</option>
           </select>
         </div>
+      </div>
+
+      {/* Stat Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <MiniStatCard label="Total Laporan" value={reports.length} icon={FileText} color="text-brand-blue" bg="bg-[#EEEDFF]" />
+        <MiniStatCard label="Perlu Verifikasi" value={reports.filter(r => r.status === 'Dilaporkan').length} icon={AlertCircle} color="text-red-500" bg="bg-red-50" delay={0.05} />
+        <MiniStatCard label="Dalam Proses" value={reports.filter(r => r.status === 'Diproses' || r.status === 'Diverifikasi').length} icon={Activity} color="text-blue-500" bg="bg-blue-50" delay={0.1} />
+        <MiniStatCard label="Selesai" value={reports.filter(r => r.status === 'Selesai').length} icon={CheckCircle2} color="text-emerald-500" bg="bg-emerald-50" delay={0.15} />
       </div>
 
       {filtered.length === 0 ? (
@@ -1579,7 +1797,7 @@ function App() {
     };
 
     return (
-      <div className="min-h-screen bg-slate-50 flex font-sans">
+      <div className="min-h-screen bg-[#FAFAFA] flex font-sans">
         <AdminSidebar active={adminView} setActive={setAdminView} onLogout={handleLogout} />
         <div className="flex-1 ml-64 overflow-x-hidden flex flex-col min-h-screen">
           <AdminHeader
@@ -1631,28 +1849,30 @@ function App() {
   // PUBLIC LAYOUT
   // ========================
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-slate-50">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 glass shadow-nav">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+    <div className="min-h-screen flex flex-col font-sans bg-[#FAFAFA]">
+      {/* Floating Glass Navbar */}
+      <nav className="fixed top-0 inset-x-0 z-50 px-4 sm:px-6 pt-3">
+        <div className="max-w-6xl mx-auto glass-nav rounded-2xl px-4 sm:px-5 h-16 flex items-center justify-between">
           {/* Logo */}
           <button onClick={() => handleNavClick('home')} className="flex items-center gap-3 shrink-0">
-            <div className="bg-brand-blue p-2.5 rounded-xl shadow-blue">
+            <div className="bg-gradient-to-br from-[#5B5FEF] to-[#6C63FF] p-2.5 rounded-xl shadow-blue">
               <Megaphone className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-black text-slate-900 font-display tracking-tight">Civic<span className="text-brand-blue">Voice</span></span>
+            <span className="text-xl font-black text-slate-900 font-display tracking-tight">
+              Civic<span className="text-gradient">Voice</span>
+            </span>
           </button>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center space-x-1.5">
+          <div className="hidden md:flex items-center gap-1">
             {navItems.map(v => (
               <button
                 key={v.id}
                 onClick={() => handleNavClick(v.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all uppercase tracking-wider ${
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
                   currentView === v.id
-                    ? 'bg-brand-blue/5 text-brand-blue border border-brand-blue/10'
-                    : 'text-slate-600 hover:text-brand-blue hover:bg-slate-100 border border-transparent'
+                    ? 'bg-gradient-to-r from-[#5B5FEF] to-[#6C63FF] text-white shadow-blue'
+                    : 'text-slate-600 hover:text-[#5B5FEF] hover:bg-white/80'
                 }`}
               >
                 {v.label}
@@ -1661,28 +1881,34 @@ function App() {
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <button className="hidden md:flex w-10 h-10 items-center justify-center rounded-full border border-slate-200/60 bg-white/60 hover:bg-white text-slate-500 hover:text-[#5B5FEF] transition-all shadow-sm relative" aria-label="Notifikasi">
+              <Bell className="h-4 w-4" />
+              <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full pulse-dot"></span>
+            </button>
             {user ? (
-              <div className="hidden md:flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-xs font-bold text-slate-800 leading-tight">{user.email}</p>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Masyarakat</p>
+              <div className="hidden md:flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 bg-white/70 border border-slate-200/60 rounded-full pl-1.5 pr-4 py-1.5 shadow-sm">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5B5FEF] to-[#6C63FF] flex items-center justify-center">
+                    <User className="h-4 w-4 text-white" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-800">{user.email.split('@')[0]}</span>
                 </div>
                 <button onClick={handleLogout} className="btn-danger border border-red-200 px-4 py-2 text-xs font-bold transition-all shadow-sm">Logout</button>
               </div>
             ) : (
               <button
                 onClick={() => setIsLoginModalOpen(true)}
-                className="hidden md:flex btn-secondary px-5 py-2.5 text-xs font-bold items-center gap-2"
+                className="hidden md:flex btn-primary px-5 py-2.5 rounded-full text-xs font-bold items-center gap-2"
               >
-                <User className="h-4 w-4 text-brand-blue" /> Masuk Aplikasi
+                <User className="h-4 w-4" /> Masuk Aplikasi
               </button>
             )}
 
             {/* Mobile hamburger */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shadow-sm"
+              className="md:hidden w-10 h-10 flex items-center justify-center rounded-full border border-slate-200/60 bg-white/70 hover:bg-white transition-all shadow-sm"
               aria-label="Toggle mobile menu"
             >
               {mobileMenuOpen ? <X className="h-5 w-5 text-slate-700" /> : <Menu className="h-5 w-5 text-slate-700" />}
@@ -1694,37 +1920,37 @@ function App() {
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-white border-t border-slate-100 overflow-hidden shadow-lg"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="md:hidden max-w-6xl mx-auto mt-2 glass-nav rounded-2xl overflow-hidden"
             >
-              <div className="px-4 py-4 space-y-1.5">
+              <div className="p-3 space-y-1">
                 {navItems.map(v => (
                   <button
                     key={v.id}
                     onClick={() => handleNavClick(v.id)}
-                    className={`w-full text-left px-4 py-3 rounded-xl text-xs font-extrabold transition-all flex items-center gap-3 uppercase tracking-wider ${
-                      currentView === v.id ? 'bg-brand-blue/5 text-brand-blue border border-brand-blue/10' : 'text-slate-700 hover:bg-slate-50'
+                    className={`w-full text-left px-4 py-3 rounded-xl text-xs font-extrabold transition-all flex items-center gap-3 ${
+                      currentView === v.id ? 'bg-gradient-to-r from-[#5B5FEF] to-[#6C63FF] text-white shadow-blue' : 'text-slate-700 hover:bg-white/80'
                     }`}
                   >
-                    {v.id === 'home' && <Home className="h-4.5 w-4.5 text-brand-blue" />}
-                    {v.id === 'laporan' && <FileText className="h-4.5 w-4.5 text-brand-blue" />}
-                    {v.id === 'peta' && <Map className="h-4.5 w-4.5 text-brand-blue" />}
-                    {v.id === 'dashboard' && <BarChart3 className="h-4.5 w-4.5 text-brand-blue" />}
+                    {v.id === 'home' && <Home className="h-4.5 w-4.5" />}
+                    {v.id === 'laporan' && <FileText className="h-4.5 w-4.5" />}
+                    {v.id === 'peta' && <Map className="h-4.5 w-4.5" />}
+                    {v.id === 'dashboard' && <BarChart3 className="h-4.5 w-4.5" />}
                     {v.label}
                   </button>
                 ))}
-                <div className="pt-2.5 border-t border-slate-100 mt-2.5">
+                <div className="pt-2.5 border-t border-slate-200/60 mt-2.5">
                   {user ? (
                     <div>
                       <p className="text-xs text-slate-500 px-4 py-2 font-bold">{user.email}</p>
-                      <button onClick={handleLogout} className="w-full text-left px-4 py-3 rounded-xl text-xs font-extrabold text-red-500 hover:bg-red-50 transition-all flex items-center gap-3 uppercase tracking-wider">
+                      <button onClick={handleLogout} className="w-full text-left px-4 py-3 rounded-xl text-xs font-extrabold text-red-500 hover:bg-red-50 transition-all flex items-center gap-3">
                         <LogOut className="h-4.5 w-4.5" /> Keluar Sesi
                       </button>
                     </div>
                   ) : (
-                    <button onClick={() => { setIsLoginModalOpen(true); setMobileMenuOpen(false); }} className="w-full btn-primary px-4 py-3 text-xs font-bold flex items-center gap-3 justify-center">
+                    <button onClick={() => { setIsLoginModalOpen(true); setMobileMenuOpen(false); }} className="w-full btn-primary px-4 py-3 text-xs font-bold flex items-center gap-3 justify-center rounded-xl">
                       <User className="h-4.5 w-4.5" /> Masuk Aplikasi
                     </button>
                   )}
@@ -1769,7 +1995,7 @@ function App() {
             </motion.div>
           )}
           {currentView === 'dashboard' && (
-            <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-20">
+            <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-24">
               <DashboardView reports={reports} />
             </motion.div>
           )}
